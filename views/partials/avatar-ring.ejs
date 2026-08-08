@@ -1,0 +1,8 @@
+<%
+  var _c1 = (typeof profile !== 'undefined' && profile && profile.color) || '#e3a23c';
+  var _c2 = (typeof profile !== 'undefined' && profile && profile.color2) || _c1;
+  var _size = typeof size !== 'undefined' ? size : 32;
+%>
+<span class="avatar-ring" style="--ring-a: <%= _c1 %>; --ring-b: <%= _c2 %>; width: <%= _size %>px; height: <%= _size %>px;">
+  <img src="<%= avatarUrl(typeof profile !== 'undefined' ? profile : null) %>" alt="" />
+</span>

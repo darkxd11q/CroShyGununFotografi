@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fotoğraf Öner · CroShy Günün Fotoğrafı</title>
+  <%- include('partials/theme-init') %>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+  <%- include('partials/topbar', { showSocial: false }) %>
+
+  <main class="login-stage">
+    <div class="login-card profile-card">
+      <span class="eyebrow">Fotoğraf Öner</span>
+      <h1>Günün Fotoğrafını Sen Seç</h1>
+
+      <% if (error) { %>
+        <div class="alert alert-error"><%= error %></div>
+      <% } %>
+      <% if (success) { %>
+        <div class="alert alert-success"><%= success %></div>
+      <% } %>
+
+      <% if (eligibility.eligible) { %>
+        <form method="POST" action="/oner" enctype="multipart/form-data">
+          <div class="field">
+            <label for="name">Fotoğraf İsmi</label>
+            <input type="text" id="name" name="name" required />
+          </div>
+          <div class="field">
+            <label for="color">Renk</label>
+            <div class="color-field-row">
+              <input type="color" id="colorPicker" value="#e3a23c" />
+              <input type="text" id="color" name="color" placeholder="örn. #e3a23c" value="#e3a23c" required />
+            </div>
+          </div>
+          <div class="field">
+            <label for="description">Açıklama <span class="optional-mark">(opsiyonel)</span></label>
+            <textarea id="description" name="description" placeholder="Fotoğraf hakkında birkaç cümle..."></textarea>
+          </div>
+          <div class="field">
+            <label for="image">Fotoğraf Dosyası</label>
+            <input type="file" id="image" name="image" accept="image/png, image/jpeg, image/webp, image/gif" required />
+          </div>
+          <button type="submit" class="btn">Öner</button>
+        </form>
+      <% } else { %>
+        <div class="suggestion-status">
+          <% if (eligibility.banned) { %>
+            <p class="status-line status-banned">
+              <% if (eligibility.banUntil === 'permanent') { %>
+                Fotoğraf önerme yetkin kalıcı olarak kısıtlanmış.
+              <% } else { %>
+                Fotoğraf önerme yetkin <%= new Date(eligibility.banUntil).toLocaleDateString('tr-TR', { day: '2-digit', month: 'long', year: 'numeric' }) %> tarihine kadar kısıtlanmış.
+              <% } %>
+            </p>
+          <% } else if (eligibility.alreadyToday) { %>
+            <p class="status-line">Bugün zaten bir öneri gönderdin. Yarın tekrar deneyebilirsin.</p>
+          <% } else if (!eligibility.enoughDays) { %>
+            <p class="status-line">Fotoğraf önerebilmek için siteye en az <strong><%= minDays + 1 %></strong> farklı gün, her seferinde en az 1 dakika girmelisin.</p>
+            <div class="progress-track">
+              <div class="progress-fill" style="width: <%= Math.min(100, Math.round((eligibility.activeDays / (minDays + 1)) * 100)) %>%;"></div>
+            </div>
+            <p class="progress-label"><%= eligibility.activeDays %> / <%= minDays + 1 %> gün</p>
+          <% } %>
+        </div>
+      <% } %>
+
+      <a href="/" class="back-home-link">← Ana Sayfaya Dön</a>
+    </div>
+  </main>
+  <script src="/js/theme.js"></script>
+  <script>
+    var picker = document.getElementById('colorPicker');
+    var colorText = document.getElementById('color');
+    if (picker) {
+      picker.addEventListener('input', function () { colorText.value = picker.value; });
+    }
+  </script>
+</body>
+</html>

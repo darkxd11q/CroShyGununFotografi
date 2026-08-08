@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title><%= profile ? (profile.hitap || username) : 'Kullanıcı Bulunamadı' %> · CroShy Günün Fotoğrafı</title>
+  <%- include('partials/theme-init') %>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+  <%- include('partials/topbar', { showSocial: false }) %>
+
+  <main class="stage">
+    <% if (!profile) { %>
+      <div class="empty-state">
+        <div class="icon">Bulunamadı</div>
+        <p>"<%= username %>" adında bir kullanıcı yok.</p>
+      </div>
+    <% } else { %>
+      <div class="profile-view-card">
+        <span class="avatar-ring avatar-ring-xl" style="--ring-a: <%= profile.color || '#e3a23c' %>; --ring-b: <%= profile.color2 || profile.color || '#e3a23c' %>;">
+          <img src="<%= avatarUrl(profile) %>" alt="" />
+        </span>
+        <h1 class="profile-view-hitap <%= nameStyle(profile).cls %>" style="<%= nameStyle(profile).style %>"><%= profile.hitap || profile.name %></h1>
+        <%- include('partials/badges', { badges: badges }) %>
+        <div class="profile-view-username">@<%= profile.name %></div>
+
+        <% if (profile.description) { %>
+          <p class="profile-view-desc"><%= profile.description %></p>
+        <% } %>
+
+        <% if (profile.discord) { %>
+          <div class="profile-view-discord">🎮 Discord: <%= profile.discord %></div>
+        <% } %>
+      </div>
+    <% } %>
+    <a href="/" class="back-home-link">← Ana Sayfaya Dön</a>
+  </main>
+
+  <script src="/js/theme.js"></script>
+</body>
+</html>

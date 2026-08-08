@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CGF Pro+ · CroShy Günün Fotoğrafı</title>
+  <%- include('partials/theme-init') %>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+  <%- include('partials/topbar', { showSocial: false, isPro: isPro }) %>
+
+  <main class="login-stage">
+    <div class="login-card profile-card cgf-pro-card">
+      <span class="eyebrow">✨ CGF Pro+</span>
+      <h1>Ayrıcalıkların Kilidini Aç</h1>
+
+      <% if (isPro) { %>
+        <div class="alert alert-success">Zaten CGF Pro+ üyesisin, tüm ayrıcalıklar aktif! 🎉</div>
+        <a href="/" class="btn" style="display:block; text-align:center; text-decoration:none;">Ana Sayfaya Dön</a>
+      <% } else { %>
+
+        <ul class="pro-perks-list">
+          <li>🎨 <strong>7 tema</strong> arasından seçim yapma (4 tanesi yalnızca Pro+'a özel)</li>
+          <li>🖼️ Fotoğraf önerebilmek için <strong>6 gün yerine yalnızca 3 gün</strong> beklemek</li>
+          <li>⭐ Önerdiğin fotoğrafların inceleme sırasında <strong>öne çıkması</strong></li>
+          <li>🌈 Profilinde <strong>2 renk</strong> seçip gradyan bir çerçeve oluşturabilme</li>
+          <li>✅ İsminin yanında özel <strong>CGF Pro+ rozeti</strong></li>
+          <li>💬 Daha uzun yorum (500) ve açıklama (400 karakter) yazabilme</li>
+          <li>✨ Avatarında parlayan, animasyonlu bir çerçeve efekti</li>
+        </ul>
+
+        <p class="status-line">CGF Pro+ olmak için aşağıdaki 3 şartı yerine getirdiğini gösteren <strong>tek bir ekran görüntüsü</strong> gönder:</p>
+        <ol class="pro-requirements">
+          <li><a href="https://www.youtube.com/@CroShy" target="_blank" rel="noopener noreferrer">CroShy</a> kanalına abone ol</li>
+          <li><a href="https://www.youtube.com/@-darkxd11-" target="_blank" rel="noopener noreferrer">darkxd11</a> kanalına abone ol</li>
+          <li>CroShy'nin <strong>son videosunu beğen (like)</strong></li>
+        </ol>
+
+        <p class="field-hint">Örnek: aşağıdaki gibi, video sayfasında abonelik ve beğeni durumunun göründüğü bir ekran görüntüsü gönder.</p>
+        <img src="/img/cgf-pro-ornek.jpg" alt="Örnek kanıt ekran görüntüsü" class="pro-example-img" />
+
+        <% if (error) { %>
+          <div class="alert alert-error"><%= error %></div>
+        <% } %>
+        <% if (success) { %>
+          <div class="alert alert-success"><%= success %></div>
+        <% } %>
+
+        <% if (hasPending) { %>
+          <p class="status-line">Başvurun inceleniyor, sonuç bekleniyor. 🕒</p>
+        <% } else { %>
+          <form method="POST" action="/cgf-pro" enctype="multipart/form-data">
+            <div class="field">
+              <label for="image">Kanıt Ekran Görüntüsü</label>
+              <input type="file" id="image" name="image" accept="image/png, image/jpeg, image/webp, image/gif" required />
+            </div>
+            <button type="submit" class="btn">Başvuruyu Gönder</button>
+          </form>
+        <% } %>
+      <% } %>
+
+      <a href="/" class="back-home-link">← Ana Sayfaya Dön</a>
+    </div>
+  </main>
+  <script src="/js/theme.js"></script>
+</body>
+</html>

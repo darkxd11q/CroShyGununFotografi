@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rozetler · CroShy Günün Fotoğrafı</title>
+  <%- include('partials/theme-init') %>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+  <%- include('partials/topbar', { showSocial: false }) %>
+
+  <div class="admin-shell">
+    <div class="admin-top">
+      <div>
+        <span class="eyebrow">Özel Panel</span>
+        <h1>Rozetler</h1>
+      </div>
+      <div style="display:flex; align-items:center; gap:18px;">
+        <a href="/admin/ziyaretciler" class="view-live">← Kim Ne Yaptı</a>
+        <a href="/admin/geribildirimler" class="view-live">Geri Bildirimler</a>
+        <a href="/admin/hesaplar" class="view-live">Hesaplar →</a>
+        <form method="POST" action="/admin/logout" style="margin:0;">
+          <button type="submit" class="btn btn-ghost">Çıkış Yap</button>
+        </form>
+      </div>
+    </div>
+
+    <div class="panel" style="margin-bottom:24px;">
+      <h2>Otomatik Rozetler</h2>
+      <p class="status-line" style="margin-bottom:0;">
+        <strong>Haftanın Aktifi:</strong> <%= weeklyActiveUser || '— (henüz yok)' %>
+        &nbsp;·&nbsp;
+        <strong>Ayın Aktifi:</strong> <%= monthlyActiveUser || '— (henüz yok)' %>
+      </p>
+      <p class="field-hint">Bu ikisi otomatik hesaplanır, elle değiştirilemez — en çok aktif kalan kullanıcıya göre her an güncellenir.</p>
+    </div>
+
+    <div class="panel">
+      <h2>Manuel Rozetler <span class="count-pill">(<%= accounts.length %> hesap)</span></h2>
+      <% if (accounts.length === 0) { %>
+        <p class="empty-list">Henüz hesap yok.</p>
+      <% } else { %>
+        <ul class="badge-manage-list">
+          <% accounts.forEach(function(a) { %>
+            <% var p = a.profile; %>
+            <li class="badge-manage-item">
+              <img class="visitor-avatar" src="<%= avatarUrl(p) %>" alt="" style="border-color: <%= (p && p.color) || '#e3a23c' %>;" />
+              <div class="badge-manage-name">
+                <div class="visitor-name"><%= a.username %><% if (p && p.hitap) { %> <span class="visitor-hitap">— "<%= p.hitap %>"</span><% } %></div>
+                <%- include('partials/badges', { badges: getBadges(p, weeklyActiveUser, monthlyActiveUser) }) %>
+              </div>
+              <div class="badge-manage-actions">
+                <form method="POST" action="/admin/rozetler/<%= a.username %>/croshy">
+                  <button type="submit" class="btn btn-small <%= p && p.badgeCroshy ? 'btn-badge-active-croshy' : 'btn-ghost' %>"><%= p && p.badgeCroshy ? '✓ CroShy' : 'CroShy Yap' %></button>
+                </form>
+                <form method="POST" action="/admin/rozetler/<%= a.username %>/dark">
+                  <button type="submit" class="btn btn-small <%= p && p.badgeDark ? 'btn-badge-active-dark' : 'btn-ghost' %>"><%= p && p.badgeDark ? '✓ Dark' : 'Dark Yap' %></button>
+                </form>
+                <form method="POST" action="/admin/rozetler/<%= a.username %>/guvenilir">
+                  <button type="submit" class="btn btn-small <%= p && p.badgeTrusted ? 'btn-badge-active-trusted' : 'btn-ghost' %>"><%= p && p.badgeTrusted ? '✓ Güvenilir' : 'Güvenilir Yap' %></button>
+                </form>
+              </div>
+            </li>
+          <% }); %>
+        </ul>
+      <% } %>
+    </div>
+  </div>
+
+  <script src="/js/theme.js"></script>
+</body>
+</html>

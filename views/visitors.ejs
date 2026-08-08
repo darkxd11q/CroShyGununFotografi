@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ziyaretçi Kaydı · CroShy Günün Fotoğrafı</title>
+  <%- include('partials/theme-init') %>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+  <%- include('partials/topbar', { showSocial: false }) %>
+
+  <div class="admin-shell">
+    <div class="admin-top">
+      <div>
+        <span class="eyebrow">Özel Panel</span>
+        <h1>Kim, Ne Yaptı</h1>
+      </div>
+      <div style="display:flex; align-items:center; gap:18px;">
+        <a href="/admin/rozetler" class="view-live">Rozetler →</a>
+        <a href="/admin/geribildirimler" class="view-live">Geri Bildirimler</a>
+        <a href="/admin/hesaplar" class="view-live">Hesaplar →</a>
+        <form method="POST" action="/admin/logout" style="margin:0;">
+          <button type="submit" class="btn btn-ghost">Çıkış Yap</button>
+        </form>
+      </div>
+    </div>
+
+    <div class="panel" style="margin-bottom:24px;">
+      <h2>Bekleyen Fotoğraf Önerileri <span class="count-pill">(<%= pendingSuggestions.length %>)</span></h2>
+      <% if (pendingSuggestions.length === 0) { %>
+        <p class="empty-list">Şu an bekleyen bir öneri yok.</p>
+      <% } else { %>
+        <ul class="suggestion-list">
+          <% pendingSuggestions.forEach(function(s) { %>
+            <li class="suggestion-item">
+              <img class="suggestion-thumb" src="/uploads/suggestions/<%= s.filename %>" alt="<%= s.photoName %>" style="border-color: <%= s.color %>;" />
+              <div class="suggestion-body">
+                <div class="suggestion-title"><%= s.photoName %></div>
+                <div class="suggestion-meta">
+                  Öneren: <strong><%= (s.profile && s.profile.hitap) || s.name %></strong>
+                  <span class="visitor-hitap">(<%= s.name %>)</span>
+                  · <%= new Date(s.submittedAt).toLocaleString('tr-TR', { day: '2-digit', month: 'long', hour: '2-digit', minute: '2-digit' }) %>
+                </div>
+                <% if (s.description) { %><p class="suggestion-desc"><%= s.description %></p><% } %>
+                <div class="suggestion-actions">
+                  <form method="POST" action="/admin/oneriler/<%= s.id %>/onayla" style="display:inline;">
+                    <button type="submit" class="btn btn-approve">Onayla</button>
+                  </form>
+                  <form method="POST" action="/admin/oneriler/<%= s.id %>/reddet" style="display:inline;">
+                    <button type="submit" class="btn btn-danger">Reddet</button>
+                  </form>
+                </div>
+              </div>
+            </li>
+          <% }); %>
+        </ul>
+      <% } %>
+    </div>
+
+    <div class="panel">
+      <h2>
+        Ziyaretçiler <span class="count-pill" id="visibleCount">(<%= visitors.length %>)</span>
+        <% if (todaysPhoto) { %><span class="count-pill">· bugünkü fotoğraf: <%= todaysPhoto.name %></span><% } %>
+      </h2>
+
+      <% if (visitors.length > 0) { %>
+        <div class="toolbar">
+          <input type="text" id="searchBox" class="toolbar-search" placeholder="İsim, hitap ya da Discord'a göre ara..." />
+          <select id="sortSelect" class="toolbar-select">
+            <option value="recent">Son girişe göre</option>
+            <option value="active">Aktif güne göre</option>
+            <option value="name">İsme göre (A-Z)</option>
+          </select>
+          <button type="button" class="toolbar-chip" id="onlyOnlineChip" data-active="false">🟢 Yalnızca çevrimiçi</button>
+          <button type="button" class="toolbar-chip" id="onlyBannedChip" data-active="false">🚫 Yalnızca yasaklı</button>
+        </div>
+      <% } %>
+
+      <% if (visitors.length === 0) { %>
+        <p class="empty-list">Henüz kimse hesap açıp siteye girmedi.</p>
+      <% } else { %>
+        <ul class="visitor-list" id="visitorList">
+          <% visitors.forEach(function(v) { %>
+            <li class="visitor-item"
+                data-search="<%= (v.name + ' ' + ((v.profile && v.profile.hitap) || '') + ' ' + ((v.profile && v.profile.discord) || '')).toLowerCase() %>"
+                data-online="<%= v.online ? '1' : '0' %>"
+                data-banned="<%= v.banned ? '1' : '0' %>"
+                data-active-days="<%= v.activeDays %>"
+                data-last-visit="<%= v.lastVisit %>"
+                data-name-sort="<%= v.name.toLowerCase() %>">
+              <div class="visitor-main">
+                <div class="visitor-identity">
+                  <span class="avatar-online-wrap">
+                    <img class="visitor-avatar" src="<%= avatarUrl(v.profile) %>" alt="" style="border-color: <%= (v.profile && v.profile.color) || '#e3a23c' %>;" />
+                    <% if (v.online) { %><span class="online-dot" title="Şu an sitede"></span><% } %>
+                  </span>
+                  <div>
+                    <div class="visitor-name">
+                      <%= v.name %><% if (v.profile && v.profile.hitap) { %> <span class="visitor-hitap">— "<%= v.profile.hitap %>"</span><% } %><%- include('partials/badges', { badges: getBadges(v.profile, weeklyActiveUser, monthlyActiveUser) }) %>
+                    </div>
+                    <% if (v.profile && v.profile.discord) { %><div class="visitor-discord">Discord: <%= v.profile.discord %></div><% } %>
+                    <% if (v.sharedIpWith && v.sharedIpWith.length) { %>
+                      <div class="suspicious-ip">⚠ Aynı IP'den başka hesap: <%= v.sharedIpWith.join(', ') %></div>
+                    <% } %>
+                  </div>
+                </div>
+                <% if (v.vote === 'like') { %>
+                  <span class="vote-badge vote-like">👍 Beğendi</span>
+                <% } else if (v.vote === 'dislike') { %>
+                  <span class="vote-badge vote-dislike">👎 Beğenmedi</span>
+                <% } %>
+              </div>
+              <% if (v.profile && v.profile.description) { %>
+                <p class="visitor-description"><%= v.profile.description %></p>
+              <% } %>
+              <% if (v.comment) { %>
+                <p class="visitor-comment">Bugünkü yorumu: “<%= v.comment %>”</p>
+              <% } %>
+              <div class="visitor-meta">
+                <span class="visitor-time"><% if (v.online) { %><span class="online-label">🟢 Şu an sitede</span><% } else { %>Son giriş: <%= new Date(v.lastVisit).toLocaleString('tr-TR', { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' }) %><% } %></span>
+                <span class="visitor-count"><%= v.count %> giriş</span>
+                <span class="visitor-count">Aktif gün: <%= v.activeDays %>/<%= minDays + 1 %></span>
+              </div>
+              <div class="ban-controls">
+                <% if (v.banned) { %>
+                  <span class="vote-badge vote-dislike">
+                    <% if (v.banUntil === 'permanent') { %>Öneri yasağı: kalıcı<% } else { %>Öneri yasağı: <%= new Date(v.banUntil).toLocaleDateString('tr-TR') %>'e kadar<% } %>
+                  </span>
+                  <form method="POST" action="/admin/ziyaretciler/<%= v.name %>/yasak-kaldir">
+                    <button type="submit" class="btn btn-ghost btn-small">Yasağı Kaldır</button>
+                  </form>
+                <% } else { %>
+                  <form method="POST" action="/admin/ziyaretciler/<%= v.name %>/yasakla">
+                    <input type="hidden" name="duration" value="5gun" />
+                    <button type="submit" class="btn btn-ghost btn-small">5 Gün Yasakla</button>
+                  </form>
+                  <form method="POST" action="/admin/ziyaretciler/<%= v.name %>/yasakla">
+                    <input type="hidden" name="duration" value="kalici" />
+                    <button type="submit" class="btn btn-ghost btn-small">Kalıcı Yasakla</button>
+                  </form>
+                <% } %>
+              </div>
+            </li>
+          <% }); %>
+        </ul>
+        <p class="empty-list" id="noResults" style="display:none;">Aramayla eşleşen ziyaretçi yok.</p>
+      <% } %>
+    </div>
+  </div>
+
+  <script src="/js/theme.js"></script>
+  <script>
+    (function () {
+      var list = document.getElementById('visitorList');
+      if (!list) return;
+      var items = Array.prototype.slice.call(list.querySelectorAll('.visitor-item'));
+      var searchBox = document.getElementById('searchBox');
+      var sortSelect = document.getElementById('sortSelect');
+      var onlineChip = document.getElementById('onlyOnlineChip');
+      var bannedChip = document.getElementById('onlyBannedChip');
+      var noResults = document.getElementById('noResults');
+      var visibleCount = document.getElementById('visibleCount');
+
+      var state = { query: '', onlineOnly: false, bannedOnly: false, sort: 'recent' };
+
+      function apply() {
+        var visible = 0;
+        items.forEach(function (li) {
+          var matchesQuery = !state.query || li.dataset.search.indexOf(state.query) !== -1;
+          var matchesOnline = !state.onlineOnly || li.dataset.online === '1';
+          var matchesBanned = !state.bannedOnly || li.dataset.banned === '1';
+          var show = matchesQuery && matchesOnline && matchesBanned;
+          li.style.display = show ? '' : 'none';
+          if (show) visible++;
+        });
+
+        var sorted = items.slice().sort(function (a, b) {
+          if (state.sort === 'name') return a.dataset.nameSort.localeCompare(b.dataset.nameSort);
+          if (state.sort === 'active') return Number(b.dataset.activeDays) - Number(a.dataset.activeDays);
+          return new Date(b.dataset.lastVisit) - new Date(a.dataset.lastVisit);
+        });
+        sorted.forEach(function (li) { list.appendChild(li); });
+
+        visibleCount.textContent = '(' + visible + ')';
+        noResults.style.display = visible === 0 ? '' : 'none';
+      }
+
+      searchBox.addEventListener('input', function () {
+        state.query = searchBox.value.trim().toLowerCase();
+        apply();
+      });
+      sortSelect.addEventListener('change', function () {
+        state.sort = sortSelect.value;
+        apply();
+      });
+      onlineChip.addEventListener('click', function () {
+        state.onlineOnly = !state.onlineOnly;
+        onlineChip.dataset.active = String(state.onlineOnly);
+        onlineChip.classList.toggle('toolbar-chip-active', state.onlineOnly);
+        apply();
+      });
+      bannedChip.addEventListener('click', function () {
+        state.bannedOnly = !state.bannedOnly;
+        bannedChip.dataset.active = String(state.bannedOnly);
+        bannedChip.classList.toggle('toolbar-chip-active', state.bannedOnly);
+        apply();
+      });
+
+      apply();
+    })();
+  </script>
+</body>
+</html>

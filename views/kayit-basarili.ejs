@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hesap Oluşturuldu · CroShy Günün Fotoğrafı</title>
+  <%- include('partials/theme-init') %>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+  <%- include('partials/topbar', { showSocial: false }) %>
+
+  <main class="login-stage">
+    <div class="login-card profile-card">
+      <span class="eyebrow">Hoş geldin, <%= username %></span>
+      <h1>Hesabın Hazır</h1>
+
+      <p class="status-line">Aşağıdaki kurtarma kodunu kaydet — şifreni unutursan hesabına yalnızca bu kodla geri dönebilirsin.</p>
+
+      <%- include('partials/recovery-code', { recoveryCode: recoveryCode }) %>
+
+      <% if (typeof email !== 'undefined' && email) { %>
+        <% if (emailSent) { %>
+          <p class="status-line" style="margin-top:14px;">📧 Bu kod ayrıca <strong><%= email %></strong> adresine de gönderildi.</p>
+        <% } else { %>
+          <p class="status-line" style="margin-top:14px; color: var(--accent-2-soft);">⚠️ E-posta gönderilemedi (e-posta sistemi yapılandırılmamış olabilir). Kodu mutlaka kaydet.</p>
+        <% } %>
+      <% } %>
+
+      <a href="/" class="btn" style="display:block; text-align:center; text-decoration:none; margin-top:22px;">Kaydettim, Siteye Devam Et</a>
+    </div>
+  </main>
+  <script src="/js/theme.js"></script>
+</body>
+</html>

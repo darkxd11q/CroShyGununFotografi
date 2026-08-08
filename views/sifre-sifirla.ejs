@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Şifre Sıfırla · CroShy Günün Fotoğrafı</title>
+  <%- include('partials/theme-init') %>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+  <%- include('partials/topbar', { showSocial: false }) %>
+
+  <main class="login-stage">
+    <div class="login-card">
+      <span class="eyebrow">CroShy Günün Fotoğrafı</span>
+
+      <% if (success) { %>
+        <h1>Şifren Değişti</h1>
+        <div class="alert alert-success">Şifren başarıyla güncellendi. Artık yeni şifrenle giriş yapabilirsin.</div>
+        <a href="/giris" class="btn" style="display:block; text-align:center; text-decoration:none; margin-top:10px;">Giriş Yap</a>
+      <% } else { %>
+        <h1>Yeni Şifre Belirle</h1>
+
+        <% if (error) { %>
+          <div class="alert alert-error"><%= error %></div>
+        <% } %>
+
+        <form method="POST" action="/sifre-sifirla">
+          <input type="hidden" name="username" value="<%= username %>" />
+          <input type="hidden" name="token" value="<%= token %>" />
+          <div class="field">
+            <label for="newPassword">Yeni Şifre</label>
+            <input type="password" id="newPassword" name="newPassword" autocomplete="new-password" minlength="8" required />
+            <small class="field-hint">En az 8 karakter.</small>
+          </div>
+          <div class="field">
+            <label for="newPasswordConfirm">Yeni Şifre (Tekrar)</label>
+            <input type="password" id="newPasswordConfirm" name="newPasswordConfirm" autocomplete="new-password" minlength="8" required />
+          </div>
+          <button type="submit" class="btn">Şifreyi Güncelle</button>
+        </form>
+
+        <a href="/eposta-ile-kurtar" class="back-home-link">Bağlantının süresi mi doldu? Yeniden gönder →</a>
+      <% } %>
+    </div>
+  </main>
+  <script src="/js/theme.js"></script>
+</body>
+</html>

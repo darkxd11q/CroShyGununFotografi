@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Profilim · CroShy Günün Fotoğrafı</title>
+  <%- include('partials/theme-init') %>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+  <%- include('partials/topbar', { showSocial: false, isPro: isPro }) %>
+
+  <main class="login-stage">
+    <div class="login-card profile-card">
+      <span class="eyebrow">Profilim</span>
+      <h1>Kendini Tanıt</h1>
+
+      <div class="profile-preview-row">
+        <span class="avatar-ring avatar-ring-lg" id="avatarRingPreview" style="--ring-a: <%= profile.color || '#e3a23c' %>; --ring-b: <%= profile.color2 || profile.color || '#e3a23c' %>;">
+          <img id="avatarPreviewImg" src="<%= avatarUrl(profile) %>" alt="Profil fotoğrafı" />
+        </span>
+        <div>
+          <div class="profile-preview-hitap <%= nameStyle(profile).cls %>" id="hitapPreview" style="<%= nameStyle(profile).style %>"><%= profile.hitap || 'Hitabın burada görünecek' %></div>
+          <%- include('partials/badges', { badges: getBadges(profile, weeklyActiveUser, monthlyActiveUser) }) %>
+          <% if (isPro) { %>
+            <div class="pro-status pro-status-active">✨ CGF Pro+ üyesisin</div>
+          <% } else { %>
+            <a href="/cgf-pro" class="pro-status pro-status-inactive">🔓 CGF Pro+ ol, ayrıcalıkların kilidini aç →</a>
+          <% } %>
+          <% if (profile.hitap) { %><a href="/kullanici/<%= profile.name %>" class="back-home-link" style="margin-top:6px;">Profilini görüntüle →</a><% } %>
+        </div>
+      </div>
+
+      <% if (error) { %>
+        <div class="alert alert-error"><%= error %></div>
+      <% } %>
+      <% if (success) { %>
+        <div class="alert alert-success"><%= success %></div>
+      <% } %>
+
+      <% if (newRecoveryCode) { %>
+        <p class="status-line">Yeni kurtarma kodun oluşturuldu — eski kod artık geçersiz.</p>
+        <%- include('partials/recovery-code', { recoveryCode: newRecoveryCode }) %>
+        <div style="margin-bottom:22px;"></div>
+      <% } %>
+
+      <form method="POST" action="/profil" enctype="multipart/form-data">
+        <div class="field">
+          <label>Profil Fotoğrafı</label>
+          <label for="avatar" class="btn btn-ghost avatar-upload-btn">Fotoğrafı Değiştir</label>
+          <input type="file" id="avatar" name="avatar" accept="image/png, image/jpeg, image/webp, image/gif" class="avatar-input" />
+          <small class="field-hint">Seçmezsen mevcut fotoğrafın kalır.</small>
+        </div>
+
+        <div class="field">
+          <label for="hitap">Hitap <span class="required-mark">*</span></label>
+          <input type="text" id="hitap" name="hitap" maxlength="40" value="<%= profile.hitap || '' %>" required />
+          <small class="field-hint">Yorumlarında ve profilinde bu şekilde görünürsün.</small>
+        </div>
+
+        <div class="field">
+          <label for="description">Açıklama <span class="optional-mark">(opsiyonel, <%= isPro ? 400 : 200 %> karaktere kadar)</span></label>
+          <textarea id="description" name="description" maxlength="<%= isPro ? 400 : 200 %>" placeholder="Kendinle ilgili birkaç kelime..."><%= profile.description || '' %></textarea>
+        </div>
+
+        <div class="field">
+          <label for="color">Profil Rengi <span class="optional-mark">(opsiyonel)</span></label>
+          <div class="color-field-row">
+            <input type="color" id="colorPicker" value="<%= profile.color || '#e3a23c' %>" />
+            <input type="text" id="color" name="color" value="<%= profile.color || '#e3a23c' %>" />
+          </div>
+          <small class="field-hint">Profil fotoğrafının çerçevesinde ve isminde görünür.</small>
+        </div>
+
+        <div class="field">
+          <label for="color2">İkinci Profil Rengi <span class="pro-mark">CGF Pro+</span></label>
+          <div class="color-field-row">
+            <input type="color" id="colorPicker2" value="<%= profile.color2 || profile.color || '#e3a23c' %>" />
+            <input type="text" id="color2" name="color2" value="<%= profile.color2 || '' %>" placeholder="örn. #38bdf8" />
+          </div>
+          <small class="field-hint">Ayarlarsan profil çerçeven iki renk arasında yumuşak bir geçişle (gradyan) görünür. <% if (!isPro) { %>Bu bir CGF Pro+ özelliğidir — Pro+ olmayan hesaplarda kaydedilmez.<% } %></small>
+        </div>
+
+        <div class="field">
+          <label for="discord">Discord İsmi <span class="optional-mark">(opsiyonel)</span></label>
+          <input type="text" id="discord" name="discord" maxlength="40" placeholder="örn. croshy#0001 ya da croshy" value="<%= profile.discord || '' %>" />
+        </div>
+
+        <div class="field">
+          <label for="email">E-posta <span class="optional-mark">(opsiyonel)</span></label>
+          <input type="email" id="email" name="email" maxlength="100" placeholder="örn. ornek@eposta.com" value="<%= currentEmail || '' %>" />
+          <small class="field-hint">Yalnızca şifreni unutursan e-posta ile kurtarma bağlantısı göndermek için kullanılır. Kimseyle paylaşılmaz.</small>
+        </div>
+
+        <button type="submit" class="btn">Kaydet</button>
+      </form>
+
+      <div class="profile-footer-actions">
+        <form method="POST" action="/profil/yeni-kurtarma-kodu" class="js-confirm-new-code">
+          <button type="submit" class="btn btn-ghost btn-small">Yeni Kurtarma Kodu Oluştur</button>
+        </form>
+        <form method="POST" action="/cikis">
+          <button type="submit" class="btn btn-ghost btn-small">Çıkış Yap</button>
+        </form>
+      </div>
+
+      <a href="/" class="back-home-link">← Ana Sayfaya Dön</a>
+    </div>
+  </main>
+  <script src="/js/theme.js"></script>
+  <script>
+    var IS_PRO = <%= isPro ? 'true' : 'false' %>;
+    var ring = document.getElementById('avatarRingPreview');
+    var hitapPreview = document.getElementById('hitapPreview');
+    var hitapInput = document.getElementById('hitap');
+
+    var picker = document.getElementById('colorPicker');
+    var colorText = document.getElementById('color');
+    var picker2 = document.getElementById('colorPicker2');
+    var colorText2 = document.getElementById('color2');
+
+    function updatePreview() {
+      var c1 = colorText.value || '#e3a23c';
+      var c2 = colorText2.value || '';
+      ring.style.setProperty('--ring-a', c1);
+      ring.style.setProperty('--ring-b', c2 || c1);
+
+      if (IS_PRO && c2) {
+        hitapPreview.classList.add('name-gradient');
+        hitapPreview.style.backgroundImage = 'linear-gradient(90deg, ' + c1 + ', ' + c2 + ', ' + c1 + ')';
+        hitapPreview.style.color = '';
+      } else {
+        hitapPreview.classList.remove('name-gradient');
+        hitapPreview.style.backgroundImage = '';
+        hitapPreview.style.color = c1;
+      }
+    }
+
+    picker.addEventListener('input', function () { colorText.value = picker.value; updatePreview(); });
+    colorText.addEventListener('input', updatePreview);
+    picker2.addEventListener('input', function () { colorText2.value = picker2.value; updatePreview(); });
+    colorText2.addEventListener('input', updatePreview);
+    hitapInput.addEventListener('input', function () {
+      hitapPreview.textContent = hitapInput.value || 'Hitabın burada görünecek';
+    });
+
+    var avatarInput = document.getElementById('avatar');
+    var avatarPreviewImg = document.getElementById('avatarPreviewImg');
+    avatarInput.addEventListener('change', function () {
+      if (avatarInput.files && avatarInput.files[0]) {
+        avatarPreviewImg.src = URL.createObjectURL(avatarInput.files[0]);
+      }
+    });
+
+    var newCodeForm = document.querySelector('.js-confirm-new-code');
+    if (newCodeForm) {
+      newCodeForm.addEventListener('submit', function (e) {
+        if (!confirm('Yeni bir kurtarma kodu oluşturulacak ve eski kod geçersiz olacak. Devam edilsin mi?')) {
+          e.preventDefault();
+        }
+      });
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CroShy Günün Fotoğrafı</title>
+  <meta name="description" content="<% if (photo) { %>Bugünün fotoğrafı: <%= photo.name %><% } else { %>Her gün yeni bir fotoğraf.<% } %>" />
+
+  <!-- Sosyal paylaşımlarda güzel görünmesi için Open Graph / Twitter kartı -->
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="CroShy Günün Fotoğrafı" />
+  <meta property="og:title" content="CroShy Günün Fotoğrafı<% if (photo) { %> — <%= photo.name %><% } %>" />
+  <meta property="og:description" content="<% if (photo && photo.description) { %><%= photo.description %><% } else { %>Her gün yeni bir fotoğraf karesi.<% } %>" />
+  <% if (ogImage) { %><meta property="og:image" content="<%= ogImage %>" /><% } %>
+  <meta name="twitter:card" content="<%= ogImage ? 'summary_large_image' : 'summary' %>" />
+
+  <%- include('partials/theme-init') %>
+  <% if (photo) { %>
+  <script>
+    (function () {
+      try {
+        if (localStorage.getItem('gf-revealed-<%= photo.id %>')) {
+          document.documentElement.classList.add('gf-revealed');
+        }
+      } catch (e) {
+        document.documentElement.classList.add('gf-revealed');
+      }
+    })();
+  </script>
+  <% } %>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+  <%- include('partials/topbar', { showSocial: true, isPro: myProfile && myProfile.cgfPro }) %>
+
+  <main class="stage">
+    <div class="masthead">
+      <h1><span class="brand-mark">CroShy</span> Günün Fotoğrafı</h1>
+      <div class="date-line"><%= new Date(today + 'T00:00:00').toLocaleDateString('tr-TR', { day: '2-digit', month: 'long', year: 'numeric', weekday: 'long' }) %></div>
+      <div class="countdown" id="countdown" data-label="Yeni kare"></div>
+
+      <% if (visitorName && myProfile) { %>
+        <a href="/profil" class="profile-chip">
+          <%- include('partials/avatar-ring', { profile: myProfile, size: 26 }) %>
+          <span class="profile-chip-text">Merhaba, <strong class="<%= nameStyle(myProfile).cls %>" style="<%= nameStyle(myProfile).style %>"><%= myProfile.hitap %></strong><%- include('partials/badges', { badges: getBadges(myProfile, weeklyActiveUser, monthlyActiveUser) }) %> <span class="profile-chip-edit">· Profili Düzenle</span></span>
+        </a>
+        <a href="/oner" class="suggest-link <%= suggestionEligibility && suggestionEligibility.eligible ? 'suggest-link-ready' : '' %>">
+          📷 Fotoğraf Öner<% if (suggestionEligibility && suggestionEligibility.eligible) { %><span class="suggest-dot"></span><% } %>
+        </a>
+      <% } %>
+    </div>
+
+    <% if (photo) { %>
+      <div class="mystery-card-wrap" id="mysteryCardWrap" style="--mystery-color: <%= photo.color %>;">
+        <button type="button" class="mystery-card" id="mysteryCardBtn" aria-label="Günün fotoğrafını aç">
+          <div class="mystery-shimmer"></div>
+          <svg class="mystery-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2 3 7v10l9 5 9-5V7l-9-5z"></path>
+            <path d="M3 7l9 5 9-5M12 12v10"></path>
+          </svg>
+          <div class="mystery-label">Günün Karesi Hazır</div>
+          <div class="mystery-sublabel">Açmak için dokun</div>
+          <span class="mystery-particles" id="mysteryParticles"></span>
+        </button>
+      </div>
+      <noscript><style>.mystery-card-wrap{display:none !important;} .reveal-content{display:block !important;}</style></noscript>
+
+      <div class="reveal-content" id="revealContent">
+        <div class="frame-wrap" style="--photo-color: <%= photo.color %>;">
+          <div class="sprockets top">
+            <% for (let i = 0; i < 14; i++) { %><span></span><% } %>
+          </div>
+          <div class="photo-card">
+            <div class="photo-frame">
+              <% if (edition) { %><span class="frame-index">Gün #<%= edition %></span><% } %>
+              <button type="button" class="share-btn" id="shareBtn" aria-label="Paylaş" title="Paylaş">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="18" cy="5" r="3"></circle>
+                  <circle cx="6" cy="12" r="3"></circle>
+                  <circle cx="18" cy="19" r="3"></circle>
+                  <path d="M8.6 10.5 15.4 6.5M8.6 13.5l6.8 4"></path>
+                </svg>
+              </button>
+              <img src="/uploads/<%= photo.filename %>" alt="<%= photo.name %>" />
+            </div>
+            <div class="caption-row">
+              <p class="photo-name"><%= photo.name %></p>
+              <span class="color-chip">
+                <span class="swatch" style="background: <%= photo.color %>;"></span>
+                <%= photo.color %>
+              </span>
+            </div>
+            <% if (photo.description && photo.description.trim().length) { %>
+              <p class="photo-desc"><%= photo.description %></p>
+            <% } %>
+          </div>
+          <div class="sprockets bottom">
+            <% for (let i = 0; i < 14; i++) { %><span></span><% } %>
+          </div>
+        </div>
+
+        <div class="interactions">
+          <div class="reactions-row">
+            <button type="button" class="react-btn <%= myVote === 'like' ? 'active-like' : '' %>" id="likeBtn" data-type="like" <%= visitorName ? '' : 'disabled' %>>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M7 11v9H4a1 1 0 0 1-1-1v-7a1 1 0 0 1 1-1h3zm0 0 4.5-8a1.5 1.5 0 0 1 2.7 1l-1 5.5H18a2 2 0 0 1 2 2.3l-1.2 7A2 2 0 0 1 16.8 20H9a2 2 0 0 1-2-2v-7z"></path>
+              </svg>
+              <span id="likeCount"><%= votes.likes %></span>
+            </button>
+            <button type="button" class="react-btn <%= myVote === 'dislike' ? 'active-dislike' : '' %>" id="dislikeBtn" data-type="dislike" <%= visitorName ? '' : 'disabled' %>>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M17 13V4h3a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1h-3zm0 0-4.5 8a1.5 1.5 0 0 1-2.7-1l1-5.5H6a2 2 0 0 1-2-2.3l1.2-7A2 2 0 0 1 7.2 4H15a2 2 0 0 1 2 2v7z"></path>
+              </svg>
+              <span id="dislikeCount"><%= votes.dislikes %></span>
+            </button>
+          </div>
+
+          <div class="comments-section">
+            <h3>Yorumlar <span class="count-pill" id="commentCount">(<%= comments.length %>)</span></h3>
+
+            <ul class="comments-list" id="commentsList">
+              <% comments.forEach(function(c) { %>
+                <li class="comment-item" data-name="<%= c.name.toLowerCase() %>">
+                  <a href="/kullanici/<%= c.name %>"><%- include('partials/avatar-ring', { profile: c.profile, size: 30 }) %></a>
+                  <div class="comment-body">
+                    <a href="/kullanici/<%= c.name %>" class="comment-name <%= nameStyle(c.profile).cls %>" style="<%= nameStyle(c.profile).style %>"><%= (c.profile && c.profile.hitap) || c.name %></a><%- include('partials/badges', { badges: getBadges(c.profile, weeklyActiveUser, monthlyActiveUser) }) %>
+                    <span class="comment-text"><%= c.text %></span>
+                  </div>
+                  <% if (visitorName) { %>
+                    <button type="button" class="comment-like-btn <%= c.likedByMe ? 'comment-like-btn-active' : '' %>" data-author="<%= c.name %>" title="Beğen">
+                      <svg viewBox="0 0 24 24" fill="<%= c.likedByMe ? 'currentColor' : 'none' %>" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"></path>
+                      </svg>
+                      <span class="comment-like-count"><%= c.likeCount || '' %></span>
+                    </button>
+                  <% } %>
+                </li>
+              <% }); %>
+            </ul>
+            <p class="empty-list" id="noComments" <%= comments.length ? 'style="display:none;"' : '' %>>Henüz yorum yok. İlk yorumu sen yaz!</p>
+
+            <% if (visitorName) { %>
+              <form id="commentForm" class="comment-form">
+                <textarea id="commentText" maxlength="<%= myProfile && myProfile.cgfPro ? 500 : 300 %>" placeholder="Bu fotoğraf hakkında ne düşünüyorsun?"><%= myComment ? myComment.text : '' %></textarea>
+                <button type="submit" class="btn" id="commentSubmit"><%= myComment ? 'Yorumu Güncelle' : 'Yorum Yap' %></button>
+              </form>
+            <% } %>
+          </div>
+        </div>
+      </div>
+    <% } else { %>
+      <div class="empty-state">
+        <div class="icon">Henüz Yok</div>
+        <p>Bugün için hazır bir fotoğraf yok.<br />Yeni bir fotoğraf eklendiğinde burada görünecek.</p>
+      </div>
+    <% } %>
+
+    <% if (visitorName && myProfile && !myProfile.cgfPro) { %>
+      <a href="/cgf-pro" class="pro-promo-card">
+        <div class="pro-promo-title">✨ CGF Pro+ ile tanış</div>
+        <p class="pro-promo-text">7 tema, önerilerinde öncelik, gradyan profil rengi ve daha fazlası — tek bir ekran görüntüsüyle kilidi aç.</p>
+        <span class="pro-promo-cta">Nasıl olunur, göster →</span>
+      </a>
+    <% } %>
+
+    <% if (visitorName) { %>
+      <div class="feedback-card">
+        <h3>Geri Bildirim</h3>
+        <p>Siteyle ilgili düşüncelerini, önerilerini ya da karşılaştığın sorunları bizimle paylaş — geri bildirimlerin bizim için çok önemli!</p>
+        <form id="feedbackForm">
+          <textarea id="feedbackText" maxlength="500" placeholder="Ne düşünüyorsun?" required></textarea>
+          <button type="submit" class="btn" id="feedbackSubmit">Gönder</button>
+        </form>
+      </div>
+    <% } %>
+  </main>
+
+  <div class="toast" id="toast"></div>
+
+  <div class="footer-note">
+    <a href="/admin/login">admin</a>
+  </div>
+
+  <script src="/js/theme.js"></script>
+  <script>
+    var BADGE_META = <%- JSON.stringify(BADGE_META) %>;
+    var BADGE_ICON_PATHS = {
+      weekly: '<path d="M12 2 14.5 9H22l-6 4.4 2.3 7.1L12 16.1 5.7 20.5 8 13.4 2 9h7.5z"/>',
+      monthly: '<path d="M4 6l4 3 4-5 4 5 4-3-1.5 11h-13L4 6zm3.5 13h9v2h-9v-2z"/>',
+      _default: '<path d="M5 13l4 4L19 7" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>',
+    };
+    function buildBadgeRow(keys) {
+      if (!keys || !keys.length) return null;
+      var wrap = document.createElement('span');
+      wrap.className = 'badge-row';
+      keys.forEach(function (key) {
+        var meta = BADGE_META[key];
+        if (!meta) return;
+        var tick = document.createElement('span');
+        tick.className = 'badge-tick badge-tick-' + key;
+        tick.style.background = meta.colorA;
+        tick.style.color = meta.colorB;
+        tick.title = meta.label;
+        tick.innerHTML = '<svg viewBox="0 0 24 24" fill="' + (BADGE_ICON_PATHS[key] ? 'currentColor' : 'none') + '">' + (BADGE_ICON_PATHS[key] || BADGE_ICON_PATHS._default) + '</svg>';
+        wrap.appendChild(tick);
+      });
+      return wrap;
+    }
+
+    var toastEl = document.getElementById('toast');
+    function showToast(msg) {
+      toastEl.textContent = msg;
+      toastEl.classList.add('show');
+      setTimeout(function () { toastEl.classList.remove('show'); }, 2200);
+    }
+
+    // Gece Pazarı tarzı günlük açılış animasyonu — bir fotoğrafı günde yalnızca ilk seferde açarken oynar
+    <% if (photo) { %>
+    (function () {
+      var PHOTO_ID = '<%= photo.id %>';
+      var STORAGE_KEY = 'gf-revealed-' + PHOTO_ID;
+      var wrap = document.getElementById('mysteryCardWrap');
+      var btn = document.getElementById('mysteryCardBtn');
+      var particlesHost = document.getElementById('mysteryParticles');
+      if (!wrap || !btn) return;
+
+      function markRevealed() {
+        try { localStorage.setItem(STORAGE_KEY, '1'); } catch (e) { /* yoksay */ }
+      }
+
+      function spawnParticles() {
+        var count = 20;
+        for (var i = 0; i < count; i++) {
+          var p = document.createElement('span');
+          p.className = 'mystery-particle';
+          var angle = (Math.PI * 2 * i) / count + Math.random() * 0.25;
+          var dist = 90 + Math.random() * 80;
+          p.style.setProperty('--dx', Math.cos(angle) * dist + 'px');
+          p.style.setProperty('--dy', Math.sin(angle) * dist + 'px');
+          p.style.animationDelay = Math.round(Math.random() * 90) + 'ms';
+          particlesHost.appendChild(p);
+        }
+      }
+
+      btn.addEventListener('click', function () {
+        if (wrap.classList.contains('opening')) return;
+        spawnParticles();
+        wrap.classList.add('opening');
+        markRevealed();
+        setTimeout(function () {
+          document.documentElement.classList.add('gf-revealed', 'gf-revealing');
+          showToast('✨ Günün karesi açıldı!');
+        }, 620);
+      });
+    })();
+    <% } %>
+
+    // Bir sonraki güne kalan süreyi canlı gösterir
+    (function () {
+      var el = document.getElementById('countdown');
+      if (!el) return;
+      function tick() {
+        var now = new Date();
+        var next = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 0);
+        var diff = Math.max(0, next - now);
+        var h = String(Math.floor(diff / 3600000)).padStart(2, '0');
+        var m = String(Math.floor((diff % 3600000) / 60000)).padStart(2, '0');
+        var s = String(Math.floor((diff % 60000) / 1000)).padStart(2, '0');
+        el.textContent = el.dataset.label + ': ' + h + ':' + m + ':' + s;
+      }
+      tick();
+      setInterval(tick, 1000);
+    })();
+
+    // Paylaş butonu: destekleniyorsa Web Share API, yoksa panoya kopyala
+    (function () {
+      var btn = document.getElementById('shareBtn');
+      if (!btn) return;
+      btn.addEventListener('click', async function () {
+        var shareData = { title: document.title, text: document.title, url: window.location.href };
+        try {
+          if (navigator.share) {
+            await navigator.share(shareData);
+          } else {
+            await navigator.clipboard.writeText(shareData.url);
+            showToast('Bağlantı kopyalandı');
+          }
+        } catch (e) {
+          /* kullanıcı paylaşımı iptal etti, sorun değil */
+        }
+      });
+    })();
+
+    // Beğen / Beğenme
+    (function () {
+      var likeBtn = document.getElementById('likeBtn');
+      var dislikeBtn = document.getElementById('dislikeBtn');
+      if (!likeBtn || !dislikeBtn) return;
+
+      function applyVoteState(myVote, votes) {
+        likeBtn.classList.toggle('active-like', myVote === 'like');
+        dislikeBtn.classList.toggle('active-dislike', myVote === 'dislike');
+        document.getElementById('likeCount').textContent = votes.likes;
+        document.getElementById('dislikeCount').textContent = votes.dislikes;
+      }
+
+      async function vote(type) {
+        try {
+          var res = await fetch('/api/oy', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ type: type }),
+          });
+          var data = await res.json();
+          if (!res.ok) {
+            showToast(data.error || 'Bir şeyler ters gitti.');
+            return;
+          }
+          applyVoteState(data.myVote, data.votes);
+        } catch (e) {
+          showToast('Bağlantı hatası, tekrar deneyin.');
+        }
+      }
+
+      likeBtn.addEventListener('click', function () { vote('like'); });
+      dislikeBtn.addEventListener('click', function () { vote('dislike'); });
+    })();
+
+    // Yorum beğenme (event delegation ile — sonradan eklenen yorumlar için de çalışır)
+    (function () {
+      var list = document.getElementById('commentsList');
+      if (!list) return;
+      list.addEventListener('click', async function (e) {
+        var btn = e.target.closest('.comment-like-btn');
+        if (!btn) return;
+        var author = btn.getAttribute('data-author');
+        btn.disabled = true;
+        try {
+          var res = await fetch('/api/yorum/begen', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ authorName: author }),
+          });
+          var data = await res.json();
+          if (!res.ok) {
+            showToast(data.error || 'Bir şeyler ters gitti.');
+            return;
+          }
+          btn.classList.toggle('comment-like-btn-active', data.liked);
+          btn.querySelector('svg').setAttribute('fill', data.liked ? 'currentColor' : 'none');
+          btn.querySelector('.comment-like-count').textContent = data.count || '';
+        } catch (e2) {
+          showToast('Bağlantı hatası, tekrar deneyin.');
+        } finally {
+          btn.disabled = false;
+        }
+      });
+    })();
+
+    // Aktif kalma süresini ölçmek için periyodik "heartbeat" — sekme görünürken 15 saniyede bir
+    <% if (visitorName) { %>
+    (function () {
+      var HEARTBEAT_MS = 15000;
+      var timer = null;
+
+      function sendHeartbeat() {
+        fetch('/api/heartbeat', { method: 'POST' }).catch(function () {});
+      }
+
+      function start() {
+        if (timer) return;
+        sendHeartbeat();
+        timer = setInterval(sendHeartbeat, HEARTBEAT_MS);
+      }
+
+      function stop() {
+        if (!timer) return;
+        clearInterval(timer);
+        timer = null;
+      }
+
+      document.addEventListener('visibilitychange', function () {
+        if (document.visibilityState === 'visible') start();
+        else stop();
+      });
+
+      if (document.visibilityState === 'visible') start();
+    })();
+    <% } %>
+
+    // Yorum ekle / güncelle
+    (function () {
+      var form = document.getElementById('commentForm');
+      if (!form) return;
+      var textarea = document.getElementById('commentText');
+      var submitBtn = document.getElementById('commentSubmit');
+      var list = document.getElementById('commentsList');
+      var noComments = document.getElementById('noComments');
+      var countEl = document.getElementById('commentCount');
+
+      form.addEventListener('submit', async function (e) {
+        e.preventDefault();
+        var text = textarea.value.trim();
+        if (!text) return;
+        try {
+          var res = await fetch('/api/yorum', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text: text }),
+          });
+          var data = await res.json();
+          if (!res.ok) {
+            showToast(data.error || 'Yorum kaydedilemedi.');
+            return;
+          }
+
+          var name = data.comment.name;
+          var key = name.toLowerCase();
+          var hitap = (data.profile && data.profile.hitap) || name;
+          var color = (data.profile && data.profile.color) || '#e3a23c';
+          var color2 = (data.profile && data.profile.color2) || color;
+          var avatarSrc = (data.profile && data.profile.avatar) ? '/uploads/avatars/' + data.profile.avatar : '/img/default-avatar.png';
+
+          var existing = list.querySelector('li[data-name="' + key.replace(/"/g, '') + '"]');
+          if (existing) {
+            existing.querySelector('.comment-text').textContent = data.comment.text;
+          } else {
+            var li = document.createElement('li');
+            li.className = 'comment-item';
+            li.setAttribute('data-name', key);
+
+            var avatarLink = document.createElement('a');
+            avatarLink.href = '/kullanici/' + encodeURIComponent(name);
+            var ring = document.createElement('span');
+            ring.className = 'avatar-ring';
+            ring.style.width = '30px';
+            ring.style.height = '30px';
+            ring.style.setProperty('--ring-a', color);
+            ring.style.setProperty('--ring-b', color2);
+            var avatarImg = document.createElement('img');
+            avatarImg.src = avatarSrc;
+            avatarImg.alt = '';
+            ring.appendChild(avatarImg);
+            avatarLink.appendChild(ring);
+
+            var bodyDiv = document.createElement('div');
+            bodyDiv.className = 'comment-body';
+
+            var nameLink = document.createElement('a');
+            nameLink.href = '/kullanici/' + encodeURIComponent(name);
+            nameLink.className = 'comment-name';
+            var isProGradient = data.profile && data.profile.cgfPro && data.profile.color2;
+            if (isProGradient) {
+              nameLink.classList.add('name-gradient');
+              nameLink.style.backgroundImage = 'linear-gradient(90deg, ' + color + ', ' + color2 + ', ' + color + ')';
+            } else {
+              nameLink.style.color = color;
+            }
+            nameLink.textContent = hitap;
+
+            var badgeRow = buildBadgeRow(data.badges);
+
+            var textSpan = document.createElement('span');
+            textSpan.className = 'comment-text';
+            textSpan.textContent = data.comment.text;
+
+            bodyDiv.appendChild(nameLink);
+            if (badgeRow) bodyDiv.appendChild(badgeRow);
+            bodyDiv.appendChild(textSpan);
+            li.appendChild(avatarLink);
+            li.appendChild(bodyDiv);
+
+            var likeBtnEl = document.createElement('button');
+            likeBtnEl.type = 'button';
+            likeBtnEl.className = 'comment-like-btn';
+            likeBtnEl.setAttribute('data-author', name);
+            likeBtnEl.title = 'Beğen';
+            likeBtnEl.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"></path></svg><span class="comment-like-count"></span>';
+            li.appendChild(likeBtnEl);
+
+            list.appendChild(li);
+            noComments.style.display = 'none';
+            countEl.textContent = '(' + list.children.length + ')';
+          }
+          submitBtn.textContent = 'Yorumu Güncelle';
+          showToast('Yorum kaydedildi');
+        } catch (e) {
+          showToast('Bağlantı hatası, tekrar deneyin.');
+        }
+      });
+    })();
+
+    // Geri bildirim gönderme
+    (function () {
+      var form = document.getElementById('feedbackForm');
+      if (!form) return;
+      var textarea = document.getElementById('feedbackText');
+
+      form.addEventListener('submit', async function (e) {
+        e.preventDefault();
+        var text = textarea.value.trim();
+        if (!text) return;
+        try {
+          var res = await fetch('/api/geribildirim', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text: text }),
+          });
+          var data = await res.json();
+          if (!res.ok) {
+            showToast(data.error || 'Geri bildirim gönderilemedi.');
+            return;
+          }
+          textarea.value = '';
+          showToast('Teşekkürler! Geri bildirimin bize ulaştı 💬');
+        } catch (e) {
+          showToast('Bağlantı hatası, tekrar deneyin.');
+        }
+      });
+    })();
+
+    // Ara sıra nazik bir geri bildirim / CGF Pro+ hatırlatması gösterir (sekme görünürken)
+    <% if (visitorName) { %>
+    (function () {
+      var messages = [
+        '💬 Geri bildirimleriniz bizim için çok önemli!',
+        '💬 Aklında bir öneri mi var? Aşağıdan bize yaz!',
+        '💬 Siteyi nasıl daha iyi yapabiliriz? Fikrini duymak isteriz.',
+        <% if (!(myProfile && myProfile.cgfPro)) { %>
+        '✨ CGF Pro+ ile 7 tema ve daha fazlası seni bekliyor!',
+        '✨ Fotoğraf önerilerinde öncelik ister misin? CGF Pro+\\'a göz at!',
+        <% } %>
+      ];
+      var REMINDER_MS = 4 * 60 * 1000; // 4 dakikada bir
+      var i = 0;
+      setInterval(function () {
+        if (document.visibilityState !== 'visible') return;
+        showToast(messages[i % messages.length]);
+        i++;
+      }, REMINDER_MS);
+    })();
+    <% } %>
+  </script>
+</body>
+</html>

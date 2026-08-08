@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kayıt Ol · CroShy Günün Fotoğrafı</title>
+  <%- include('partials/theme-init') %>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+  <%- include('partials/topbar', { showSocial: false }) %>
+
+  <main class="login-stage">
+    <div class="login-card">
+      <span class="eyebrow">CroShy Günün Fotoğrafı</span>
+      <h1>Hesap Oluştur</h1>
+
+      <% if (error) { %>
+        <div class="alert alert-error"><%= error %></div>
+      <% } %>
+
+      <form method="POST" action="/kayit">
+        <div class="field">
+          <label for="username">Kullanıcı Adı</label>
+          <input type="text" id="username" name="username" autocomplete="username" maxlength="20" pattern="[a-zA-Z0-9_]{3,20}" value="<%= username || '' %>" autofocus required />
+          <small class="field-hint">3-20 karakter, yalnızca harf/rakam/alt çizgi. Bu kullanıcı adı yalnızca sana ait olacak.</small>
+        </div>
+        <div class="field">
+          <label for="hitap">Hitap</label>
+          <input type="text" id="hitap" name="hitap" maxlength="40" placeholder="örn. Kral Ahmet, Sayın Zeynep, Patron" value="<%= hitap || '' %>" required />
+          <small class="field-hint">Yorumlarında ve profilinde bu şekilde görüneceksin.</small>
+        </div>
+        <div class="field">
+          <label for="email">E-posta <span class="optional-mark">(opsiyonel)</span></label>
+          <input type="email" id="email" name="email" maxlength="100" placeholder="örn. ornek@eposta.com" value="<%= email || '' %>" />
+          <small class="field-hint">Girersen kurtarma koduna ek olarak e-posta ile de şifreni sıfırlayabilirsin. İstemiyorsan boş bırakabilirsin.</small>
+        </div>
+        <div class="field">
+          <label for="password">Şifre</label>
+          <input type="password" id="password" name="password" autocomplete="new-password" minlength="8" required />
+          <small class="field-hint">En az 8 karakter.</small>
+        </div>
+        <div class="field">
+          <label for="passwordConfirm">Şifre (Tekrar)</label>
+          <input type="password" id="passwordConfirm" name="passwordConfirm" autocomplete="new-password" minlength="8" required />
+        </div>
+        <button type="submit" class="btn">Hesap Oluştur</button>
+      </form>
+
+      <a href="/giris" class="back-home-link">Zaten hesabın var mı? Giriş yap →</a>
+    </div>
+  </main>
+  <script src="/js/theme.js"></script>
+</body>
+</html>

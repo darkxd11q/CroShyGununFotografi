@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Geri Bildirimler · CroShy Günün Fotoğrafı</title>
+  <%- include('partials/theme-init') %>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+  <%- include('partials/topbar', { showSocial: false }) %>
+
+  <div class="admin-shell">
+    <div class="admin-top">
+      <div>
+        <span class="eyebrow">Özel Panel</span>
+        <h1>Geri Bildirimler</h1>
+      </div>
+      <div style="display:flex; align-items:center; gap:18px;">
+        <a href="/admin/ziyaretciler" class="view-live">← Kim Ne Yaptı</a>
+        <a href="/admin/rozetler" class="view-live">Rozetler</a>
+        <a href="/admin/hesaplar" class="view-live">Hesaplar</a>
+        <form method="POST" action="/admin/logout" style="margin:0;">
+          <button type="submit" class="btn btn-ghost">Çıkış Yap</button>
+        </form>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Gelen Geri Bildirimler <span class="count-pill">(<%= feedback.length %>)</span></h2>
+      <% if (feedback.length === 0) { %>
+        <p class="empty-list">Henüz geri bildirim gönderilmedi.</p>
+      <% } else { %>
+        <ul class="feedback-list">
+          <% feedback.forEach(function(f) { %>
+            <li class="feedback-item">
+              <img class="visitor-avatar" src="<%= avatarUrl(f.profile) %>" alt="" style="border-color: <%= (f.profile && f.profile.color) || '#e3a23c' %>;" />
+              <div class="feedback-body">
+                <div class="feedback-meta">
+                  <span class="visitor-name"><%= (f.profile && f.profile.hitap) || f.name %></span>
+                  <span class="visitor-hitap">(<%= f.name %>)</span>
+                  <span class="feedback-time"><%= new Date(f.at).toLocaleString('tr-TR', { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' }) %></span>
+                </div>
+                <p class="feedback-text"><%= f.text %></p>
+              </div>
+            </li>
+          <% }); %>
+        </ul>
+      <% } %>
+    </div>
+  </div>
+
+  <script src="/js/theme.js"></script>
+</body>
+</html>

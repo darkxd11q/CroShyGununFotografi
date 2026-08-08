@@ -1,0 +1,68 @@
+<div class="topbar">
+  <div class="theme-switch" role="group" aria-label="Tema seç">
+    <button type="button" data-theme-set="light" aria-label="Açık tema" title="Açık tema" aria-pressed="false">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <circle cx="12" cy="12" r="4.2"></circle>
+        <path d="M12 2.5v2.4M12 19.1v2.4M4.4 4.4l1.7 1.7M17.9 17.9l1.7 1.7M2.5 12h2.4M19.1 12h2.4M4.4 19.6l1.7-1.7M17.9 6.1l1.7-1.7"></path>
+      </svg>
+    </button>
+    <button type="button" data-theme-set="dark" aria-label="Koyu tema" title="Koyu tema" aria-pressed="false">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M20.5 14.5A8.5 8.5 0 1 1 9.5 3.5a7 7 0 0 0 11 11z"></path>
+      </svg>
+    </button>
+    <button type="button" data-theme-set="neon" aria-label="Neon tema" title="Neon tema" aria-pressed="false">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M13 2 4 14h6l-1 8 9-12h-6l1-8z"></path>
+      </svg>
+    </button>
+    <% if (typeof isPro !== 'undefined' && isPro) { %>
+      <button type="button" data-theme-set="sunset" aria-label="Sunset teması" title="Sunset (CGF Pro+)" aria-pressed="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="4.5"></circle>
+          <path d="M3 19h18M2 15.5h20"></path>
+        </svg>
+      </button>
+      <button type="button" data-theme-set="aurora" aria-label="Aurora teması" title="Aurora (CGF Pro+)" aria-pressed="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 17c2-5 4-8 9-8s7 3 9 8M3 12c2-4 4-6 9-6s7 2 9 6"></path>
+        </svg>
+      </button>
+      <button type="button" data-theme-set="rosegold" aria-label="Rose Gold teması" title="Rose Gold (CGF Pro+)" aria-pressed="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M6 3h12l3 5-9 13L3 8z"></path>
+          <path d="M3 8h18M9 3l-2 5 5 13 5-13-2-5"></path>
+        </svg>
+      </button>
+      <button type="button" data-theme-set="mono" aria-label="Mono teması" title="Mono (CGF Pro+)" aria-pressed="false">
+        <svg viewBox="0 0 24 24" fill="currentColor" stroke="none">
+          <path d="M12 2a10 10 0 0 0 0 20 10 10 0 0 0 0-20zm0 2.2v15.6a7.8 7.8 0 0 1 0-15.6z"></path>
+        </svg>
+      </button>
+    <% } else { %>
+      <a href="/cgf-pro" class="theme-lock-hint" title="CGF Pro+ ile 4 tema daha aç">🔒 +4</a>
+    <% } %>
+  </div>
+
+  <% if (typeof showSocial === 'undefined' || showSocial) { %>
+    <div class="social-links">
+      <a href="https://www.youtube.com/croshy" target="_blank" rel="noopener noreferrer" aria-label="YouTube" title="YouTube">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="2.5" y="5.5" width="19" height="13" rx="4"></rect>
+          <path d="M10.5 9.2v5.6l5-2.8-5-2.8z" fill="currentColor" stroke="none"></path>
+        </svg>
+      </a>
+      <a href="https://kick.com/croshy" target="_blank" rel="noopener noreferrer" aria-label="Kick" title="Kick">
+        <svg viewBox="0 0 24 24" fill="currentColor" stroke="none">
+          <path d="M5 4h3.4v5.6L13.6 4H17.6L11.6 11.2 18 20h-4.2l-4.6-6.4-1 1.1V20H5V4z"></path>
+        </svg>
+      </a>
+      <a href="https://www.twitch.tv/croshyy" target="_blank" rel="noopener noreferrer" aria-label="Twitch" title="Twitch">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M5 3.5 3.5 7v12h5V22l3.5-3h4L20.5 14.5V3.5H5z"></path>
+          <path d="M13 8v4M17 8v4" stroke-linecap="round"></path>
+        </svg>
+      </a>
+    </div>
+  <% } %>
+</div>

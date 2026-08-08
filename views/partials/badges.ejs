@@ -1,0 +1,18 @@
+<% if (typeof badges !== 'undefined' && badges && badges.length) { %>
+  <span class="badge-row">
+    <% badges.forEach(function(key) { %>
+      <% var meta = BADGE_META[key]; %>
+      <% if (meta) { %>
+        <span class="badge-tick badge-tick-<%= key %>" style="background: <%= meta.colorA %>; color: <%= meta.colorB %>;" title="<%= meta.label %>">
+          <% if (key === 'weekly') { %>
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2 14.5 9H22l-6 4.4 2.3 7.1L12 16.1 5.7 20.5 8 13.4 2 9h7.5z"/></svg>
+          <% } else if (key === 'monthly') { %>
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 6l4 3 4-5 4 5 4-3-1.5 11h-13L4 6zm3.5 13h9v2h-9v-2z"/></svg>
+          <% } else { %>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg>
+          <% } %>
+        </span>
+      <% } %>
+    <% }); %>
+  </span>
+<% } %>

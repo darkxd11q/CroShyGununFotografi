@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Paneli · CroShy Günün Fotoğrafı</title>
+  <%- include('partials/theme-init') %>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+  <%- include('partials/topbar', { showSocial: false }) %>
+
+  <div class="admin-shell">
+    <div class="admin-top">
+      <div>
+        <span class="eyebrow">Yönetim Paneli</span>
+        <h1>Fotoğraf Arşivi</h1>
+      </div>
+      <div style="display:flex; align-items:center; gap:18px;">
+        <a href="/" class="view-live" target="_blank">Canlı sayfayı gör ↗</a>
+        <form method="POST" action="/admin/logout" style="margin:0;">
+          <button type="submit" class="btn btn-ghost">Çıkış Yap</button>
+        </form>
+      </div>
+    </div>
+
+    <% if (error) { %>
+      <div class="alert alert-error"><%= error %></div>
+    <% } %>
+    <% if (success) { %>
+      <div class="alert alert-success"><%= success %></div>
+    <% } %>
+
+    <div class="admin-grid">
+      <!-- Fotoğraf ekleme formu -->
+      <div class="panel">
+        <h2>Yeni Fotoğraf Ekle</h2>
+        <form method="POST" action="/admin/photos" enctype="multipart/form-data">
+          <div class="field">
+            <label for="name">İsim</label>
+            <input type="text" id="name" name="name" placeholder="örn. Kumsalda Gün Batımı" required />
+          </div>
+
+          <div class="field">
+            <label for="color">Renk</label>
+            <div class="color-field-row">
+              <input type="color" id="colorPicker" value="#e3a23c" />
+              <input type="text" id="color" name="color" placeholder="örn. #e3a23c ya da 'amber'" value="#e3a23c" required />
+            </div>
+            <small class="field-hint">Bu renk fotoğrafın çerçevesinde ve arkasındaki ışıltıda görünecek.</small>
+          </div>
+
+          <div class="field">
+            <label for="description">Açıklama <span style="text-transform:none; letter-spacing:0;">(opsiyonel)</span></label>
+            <textarea id="description" name="description" placeholder="Fotoğraf hakkında birkaç cümle..."></textarea>
+          </div>
+
+          <div class="field">
+            <label for="image">Fotoğraf Dosyası</label>
+            <input type="file" id="image" name="image" accept="image/png, image/jpeg, image/webp, image/gif" required />
+          </div>
+
+          <button type="submit" class="btn">Sıraya Ekle</button>
+        </form>
+      </div>
+
+      <!-- Sıra ve geçmiş -->
+      <div style="display:flex; flex-direction:column; gap:24px;">
+        <div class="panel">
+          <h2>Sırada Bekleyenler <span class="count-pill">(<%= queue.length %>)</span></h2>
+          <% if (queue.length === 0) { %>
+            <p class="empty-list">Sırada fotoğraf yok. Eklediğiniz ilk fotoğraf bugün gösterilecek.</p>
+          <% } else { %>
+            <ul class="queue-list">
+              <% queue.forEach(function(p) { %>
+                <li class="queue-item <%= p.showDate === today ? 'today' : '' %>">
+                  <img class="thumb" src="/uploads/<%= p.filename %>" alt="<%= p.name %>" style="border-color: <%= p.color %>;" />
+                  <span class="swatch-dot" style="background: <%= p.color %>;"></span>
+                  <div class="meta">
+                    <div class="name"><%= p.name %></div>
+                    <div class="date"><%= p.showDate %></div>
+                  </div>
+                  <% if (p.showDate === today) { %><span class="badge-today">Bugün</span><% } %>
+                  <form method="POST" action="/admin/photos/<%= p.id %>/delete" class="js-confirm-delete" style="margin:0;">
+                    <button type="submit" class="btn btn-danger">Sil</button>
+                  </form>
+                </li>
+              <% }); %>
+            </ul>
+          <% } %>
+        </div>
+
+        <div class="panel">
+          <h2>Daha Önce Gösterilenler <span class="count-pill">(<%= past.length %>)</span></h2>
+          <% if (past.length === 0) { %>
+            <p class="empty-list">Henüz gösterilmiş bir fotoğraf yok.</p>
+          <% } else { %>
+            <ul class="past-list">
+              <% past.forEach(function(p) { %>
+                <li class="queue-item">
+                  <img class="thumb" src="/uploads/<%= p.filename %>" alt="<%= p.name %>" style="border-color: <%= p.color %>;" />
+                  <span class="swatch-dot" style="background: <%= p.color %>;"></span>
+                  <div class="meta">
+                    <div class="name"><%= p.name %></div>
+                    <div class="date"><%= p.showDate %></div>
+                  </div>
+                  <form method="POST" action="/admin/photos/<%= p.id %>/delete" class="js-confirm-delete" style="margin:0;">
+                    <button type="submit" class="btn btn-danger">Sil</button>
+                  </form>
+                </li>
+              <% }); %>
+            </ul>
+          <% } %>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/theme.js"></script>
+  <script>
+    // Renk seçici ile metin alanını senkronize et
+    const picker = document.getElementById('colorPicker');
+    const colorText = document.getElementById('color');
+    picker.addEventListener('input', () => { colorText.value = picker.value; });
+
+    // Silme formları için onay (satır içi onsubmit yerine CSP-dostu addEventListener)
+    document.querySelectorAll('.js-confirm-delete').forEach(function (form) {
+      form.addEventListener('submit', function (e) {
+        if (!confirm('Bu fotoğrafı silmek istediğinize emin misiniz?')) {
+          e.preventDefault();
+        }
+      });
+    });
+  </script>
+</body>
+</html>

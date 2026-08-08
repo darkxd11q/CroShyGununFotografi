@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hesaplar · CroShy Günün Fotoğrafı</title>
+  <%- include('partials/theme-init') %>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+  <%- include('partials/topbar', { showSocial: false }) %>
+
+  <div class="admin-shell">
+    <div class="admin-top">
+      <div>
+        <span class="eyebrow">Özel Panel</span>
+        <h1>Hesaplar</h1>
+      </div>
+      <div style="display:flex; align-items:center; gap:18px;">
+        <a href="/admin/ziyaretciler" class="view-live">← Kim Ne Yaptı</a>
+        <a href="/admin/rozetler" class="view-live">Rozetler</a>
+        <a href="/admin/geribildirimler" class="view-live">Geri Bildirimler</a>
+        <form method="POST" action="/admin/logout" style="margin:0;">
+          <button type="submit" class="btn btn-ghost">Çıkış Yap</button>
+        </form>
+      </div>
+    </div>
+
+    <% if (error) { %>
+      <div class="alert alert-error"><%= error %></div>
+    <% } %>
+
+    <div class="panel">
+      <h2>Kayıtlı Hesaplar <span class="count-pill">(<%= accounts.length %>)</span></h2>
+      <% if (accounts.length === 0) { %>
+        <p class="empty-list">Henüz hesap yok.</p>
+      <% } else { %>
+        <ul class="account-list">
+          <% accounts.forEach(function(a) { %>
+            <li class="account-item <%= a.suspended ? 'account-item-suspended' : '' %>">
+              <div class="account-main">
+                <%- include('partials/avatar-ring', { profile: a.profile, size: 40 }) %>
+                <div class="account-identity">
+                  <div class="visitor-name">
+                    <%= a.username %><% if (a.profile && a.profile.hitap) { %> <span class="visitor-hitap">— "<%= a.profile.hitap %>"</span><% } %>
+                    <% if (a.suspended) { %><span class="vote-badge vote-dislike">Askıda</span><% } %>
+                  </div>
+                  <div class="account-meta">
+                    <% if (a.createdAt) { %><span>Kayıt: <%= new Date(a.createdAt).toLocaleDateString('tr-TR', { day: '2-digit', month: 'long', year: 'numeric' }) %></span><% } %>
+                    <% if (a.registrationIp) { %><span>IP: <%= a.registrationIp %></span><% } %>
+                  </div>
+                </div>
+              </div>
+
+              <div class="account-actions">
+                <% if (a.suspended) { %>
+                  <form method="POST" action="/admin/hesaplar/<%= a.username %>/askiyi-kaldir">
+                    <button type="submit" class="btn btn-ghost btn-small">Askıyı Kaldır</button>
+                  </form>
+                <% } else { %>
+                  <form method="POST" action="/admin/hesaplar/<%= a.username %>/askiya-al">
+                    <button type="submit" class="btn btn-ghost btn-small">Askıya Al</button>
+                  </form>
+                <% } %>
+
+                <form method="POST" action="/admin/hesaplar/<%= a.username %>/yeniden-adlandir" class="rename-form">
+                  <input type="text" name="newUsername" placeholder="yeni kullanıcı adı" pattern="[a-zA-Z0-9_]{3,20}" maxlength="20" required />
+                  <button type="submit" class="btn btn-ghost btn-small">Yeniden Adlandır</button>
+                </form>
+              </div>
+            </li>
+          <% }); %>
+        </ul>
+      <% } %>
+    </div>
+  </div>
+
+  <script src="/js/theme.js"></script>
+</body>
+</html>
